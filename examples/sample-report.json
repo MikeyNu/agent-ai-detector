@@ -1,0 +1,40 @@
+{
+  "case_id": "DEMO-2026-0001",
+  "asset": {
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "media_type": "image",
+    "source_kind": "derived",
+    "oriented_pixel_size": [1200, 900]
+  },
+  "scope": "both",
+  "provenance": {
+    "state": "not_verified",
+    "scope": null,
+    "issuer": null,
+    "verifier": null,
+    "binding_verified": false,
+    "trust_verified": false
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "modality": "image",
+      "location": { "bbox_xywh": [400, 290, 95, 70] },
+      "observation": "Example only: an earring attachment appears discontinuous in the supplied downscaled representation.",
+      "hypothesis": "A segmentation boundary, conventional retouching, or generative synthesis might explain it.",
+      "alternative_explanations": ["Hair conceals part of the attachment", "JPEG or resize artifacts obscure fine detail"],
+      "reproduction": "Hypothetical teaching example; no real image was examined. Do not reuse as an actual finding.",
+      "evidence_family": "geometry",
+      "strength": "low",
+      "quality_severity": "minor"
+    }
+  ],
+  "decision": {
+    "origin_label": "indeterminate",
+    "evidence_strength": "low",
+    "quality_label": "not_assessed",
+    "rationale": "Demonstration report only. No original media, C2PA verification or reproducible optical measurements were supplied."
+  },
+  "limitations": ["No source media was actually inspected in this example"],
+  "checks_not_performed": ["Image native-pixel inspection", "Independent C2PA trust and binding validation"]
+}

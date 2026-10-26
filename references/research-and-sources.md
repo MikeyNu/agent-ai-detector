@@ -1,0 +1,42 @@
+# Research evidence dossier
+
+**Reviewed 2026-10-26.** This skill draws from peer-reviewed literature, public research preprints, research benchmarks, technical specifications and official product documentation. Research papers are not equivalent to calibrated performance of this skill. URLs are supplied as references, not imported code. Studies may focus on specific generators/datasets and should not be extrapolated to all content. Findings below distinguish direct source claims from operational implications.
+
+## Core source registry
+
+| ID | Source, type and URL | Direct finding or documented mechanism | Operational consequence |
+| --- | --- | --- | --- |
+| R01 | Li et al., **NeurIPS 2025**, *Is Artificial Intelligence Generated Image Detection a Solved Problem?* https://papers.neurips.cc/paper_files/paper/2025/hash/fb693c67f61e5321746ffce8b6fdd2d0-Abstract-Datasets_and_Benchmarks_Track.html | AIGIBench evaluated 11 methods across diverse sources, degradation, augmentation and preprocessing; observed material real-world performance loss. | No unsupported one-number detector confidence. Stress-test unseen generators and social reposts. |
+| R02 | Zheng et al., **NeurIPS 2024**, *Breaking Semantic Artifacts for Generalized AI-generated Image Detection*, https://proceedings.neurips.cc/paper_files/paper/2024/hash/6dddcff5b115b40c998a08fbd1cea4d7-Abstract-Conference.html | Existing detectors can overfit scene-related "semantic artifacts" and fail in cross-scene generalization. | Separate visual concepts/content from generative footprints; balance scene types. |
+| R03 | Ren et al., **arXiv Feb 2026**, *How well are open sourced AI-generated image detection models out-of-the-box*, https://arxiv.org/abs/2602.07814 | 16 methods, 23 model variants, 12 datasets and ~2.6M images; rankings unstable; generator/domain shifts severely impair many systems. Preprint at research date. | Do not recommend one universal detector without validation. |
+| R04 | Cao et al., **ICML 2026**, *Where Detectors Fail: Probing Generative Space for Generalizable AI-Generated Image Detection*, https://proceedings.mlr.press/v306/cao26s.html | Detector generalization can fail under different sampling / generative latent-space variations. | Test current generators and challenging perturbations beyond common benchmarks. |
+| R05 | Roca et al., **arXiv 2025**, *How good are humans at detecting AI-generated images?*, https://arxiv.org/abs/2507.18640 | ~287k human ratings from >12.5k people yielded ~62% overall correctness; landscapes harder than portraits. | Human vision is helpful for QA but not a provenance oracle. |
+| R06 | NIST **OpenMFC** official task definition, https://mfc.nist.gov/ | Separates manipulation detection/localization, deepfake detection and camera/provenance tasks. Uses original reference media. | Distinguish AI synthesis, conventional manipulation and localization. |
+| R07 | C2PA official **technical spec** https://spec.c2pa.org/ and **Explainer** https://spec.c2pa.org/specifications/specifications/2.4/explainer/Explainer.html | Signature+binding can validate a provenance claim; incomplete history possible; provenance alone does not establish factual truth. | Scope C2PA result; validate issuer/trust; avoid truth claims. |
+| R08 | Content Authenticity Initiative **FAQ** https://opensource.contentauthenticity.org/docs/getting-started/faqs/ | Camera-signed picture of a screen records camera capture, not the nature of content pictured. Screenshots can lose credentials. | Avoid "signed capture = subject real" fallacy. |
+| R09 | Official **c2patool usage** https://github.com/contentauth/c2patool/blob/main/docs/usage.md | `c2patool asset` displays JSON; `--info` displays summary; trust still needs correct validation policy. | Offline tool saves reports without claiming the mere JSON verifies a trustworthy chain. |
+| R10 | Google DeepMind **SynthID** https://deepmind.google/models/synthid/ | Provider-linked, invisible watermarks for certain images/video/audio/text; designed to survive certain common transformations. | Only a supported verifier can check; negative checks do not rule out third-party AI. |
+| R11 | Google **Gemini verification help** https://support.google.com/gemini/answer/16722517 | `not detected` has product coverage limits and cannot exclude generation by others; even covered content may be too small/edit too slight. | Distinguish absent signal and unsupported model. |
+| R12 | OpenAI **Content Provenance API** https://developers.openai.com/api/docs/guides/content-provenance | C2PA and SynthID scope, positive/negative outcome semantics and warnings about transformations are documented. | Prefer authorized source-specific provenance over aesthetic guesses, not universal detection. |
+| R13 | Wang et al., **ASVspoof 5 evaluation 2026**, https://arxiv.org/abs/2601.03944 | 53 team submissions; robust attacks and neural encoding/compression degrade detection despite strong clean-condition results. | Challenge audio detectors with codecs and spoof types. |
+| R14 | Wang et al., **ASVspoof 5 design 2025**, https://arxiv.org/abs/2502.08857 | Crowdsourced speakers and recording conditions, TTS/voice conversion and adversarial attack diversity. | Dataset provenance, speaker-disjoint splits and audio domain shift matter. |
+| R15 | DFRWS EU **Forensic Science International: Digital Investigation 2026**, *Boon or Bane: Source Camera Identification meets AI-generated images*, https://www.sciencedirect.com/science/article/pii/S2666281726000211 | Reported false positives for standard PRNU-based camera-source matching against AI images at tested settings, highlighting failure of naive thresholds. | No naive "sensor noise" authenticity detector; require controlled camera reference and method validation. |
+| R16 | Agent Skills **format specification**, https://github.com/agentskills/agentskills/blob/main/docs/specification.mdx | SKILL.md frontmatter, recommended progressive references/scripts and skill naming. | Portable skill root and validation tests. |
+| R17 | **FFprobe official docs**, https://ffmpeg.org/ffprobe.html | Can report stream and container metadata using JSON, with per-stream time bases and types. | Reproducible stream inventory; note VFR and seek time uncertainty. |
+| R18 | OpenAI **provenance signals help** https://help.openai.com/en/articles/8912793-provenance-signals-in-openai-generated-content | Metadata can be stripped and watermarks weakened by significant transformations; supported signal coverage changes by product. | Avoid treating negatives as proof; record product and date. |
+
+## Methodology of applying research
+
+1. Prefer peer-reviewed benchmark and official specifications for what can be asserted; treat preprints as provisional, and vendor performance claims as **not independent validation**.
+2. Translate findings into operational **falsification** rules and stress cases, not magical visual checklists. Examples: R01-R04 motivate held-out-generator tests; R07-R12 restrict provenance claims; R13-R14 restrict audio model assumptions.
+3. Do not infer a universal "fingerprint" from case-specific academic techniques. R15 is specifically a warning about failure under changed smartphone/AI-source conditions, not an endorsement of a new threshold.
+4. Check creation date, generator version, codec and edit lineage before extrapolating any result.
+5. Separate trained detector performance from the quality of an agent's qualitative optical review. No research in this registry measures the accuracy of this particular skill.
+
+## Gaps and next research milestones
+
+- Independently collect a licensing-safe, ground-truth current generator set and modern genuine camera negatives across skin textures and device pipelines.
+- Pre-register visible-only vs source-provenance vs model-assisted ablation with reviewer blinding, held-out generation families and false-positive costs.
+- Introduce optional **verified** provider watermark/camera provenance adapters only after their signed/verifier outcomes can be correctly parsed and tested across real files.
+- Add time-aligned, decoded-PTS adjacent-frame extraction, video-physics measurement and cross-modal consistency tooling only with validated transformations. Current CLI performs **requested-time** frame sampling, not frame-accurate temporal adjudication.
+- Re-review fast-moving provider coverage and benchmark limitations regularly. A source updating its claims does not retroactively validate prior assets.
