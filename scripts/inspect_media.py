@@ -112,6 +112,8 @@ def inspect_image(path: Path, out: Path, crops: list[tuple[int, int, int, int]])
         summary = {
             "original_format": original.format,
             "original_size": list(original.size),
+            "source_animated": bool(getattr(original, "is_animated", False)),
+            "source_frame_count": int(getattr(original, "n_frames", 1)),
             "exif_whitelist_no_gps": exif_summary(original),
             "metadata_keys_present": sorted(str(k) for k in original.info if k not in {"exif", "icc_profile", "xmp"}),
             "icc_profile_present": "icc_profile" in original.info,
@@ -141,26 +143,29 @@ def inspect_image(path: Path, out: Path, crops: list[tuple[int, int, int, int]])
         basename = f"crop_{index:02d}_native.png"
         native.save(out / basename)
         # Nearest-neighbor merely duplicates pixels. Do not upscale with generative AI.
-        enlarged = native.resize((w * 4, h * 4), Image.Resampling.NEAREST)
-        enlarged.save(out / f"crop_{index:02d}_nearest4x.png")
-        summary["crops"].append({"id": f"R{index:02d}", "bbox_xywh": [x, y, w, h], "native_file": basename, "nearest_neighbor_preview": f"crop_{index:02d}_nearest4x.png"})
+        enlarged_name = None
+        if w * h <= 1_500_000:
+            enlarged = native.resize((w * 4, h * 4), Image.Resampling.NEAREST)
+            enlarged_name = f"crop_{index:02d}_nearest4x.png"
+            enlarged.save(out / enlarged_name)
+        summary["crops"].append({"id": f"R{index:02d}", "bbox_xywh": [x, y, w, h], "native_file": basename, "nearest_neighbor_preview": enlarged_name, "warning": "Enlargement skipped for memory safety" if not enlarged_name else "Pixel replication only; not added detail"})
     return summary
 
 
 def probe(path: Path) -> dict:
     if not shutil.which("ffprobe"):
         return {"status": "unavailable", "note": "ffprobe not installed; no codec analysis performed"}
-    result = run(["ffprobe", "-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(path)], timeout=45)
+    result = run(["ffprobe", "-v", "error", "-protocol_whitelist", "file,pipe,data", "-print_format", "json", "-show_format", "-show_streams", str(path)], timeout=45)
     if result.returncode != 0:
         return {"status": "failed", "error": result.stderr.decode("utf-8", "replace")[:1000]}
     try:
         data = json.loads(result.stdout)
     except json.JSONDecodeError:
         return {"status": "unparseable"}
-    stream_fields = {"index", "codec_type", "codec_name", "width", "height", "avg_frame_rate", "r_frame_rate", "time_base", "duration", "nb_frames", "pix_fmt", "sample_rate", "channels", "channel_layout", "sample_fmt", "bit_rate", "color_primaries", "color_transfer", "field_order"}
+    stream_fields = {"index", "start_time", "codec_type", "codec_name", "width", "height", "avg_frame_rate", "r_frame_rate", "time_base", "duration", "nb_frames", "pix_fmt", "sample_rate", "channels", "channel_layout", "sample_fmt", "bit_rate", "color_primaries", "color_transfer", "field_order"}
     result_streams = [{key: item[key] for key in stream_fields if key in item} for item in data.get("streams", [])]
     fmt = data.get("format", {})
-    return {"status": "available", "container": {key: fmt[key] for key in ("format_name", "duration", "bit_rate", "size") if key in fmt}, "streams": result_streams, "tags_omitted_for_privacy": True}
+    return {"status": "available", "container": {key: fmt[key] for key in ("format_name", "start_time", "duration", "bit_rate", "size") if key in fmt}, "streams": result_streams, "tags_omitted_for_privacy": True}
 
 
 def inspect_video(path: Path, out: Path, frame_count: int, metadata: dict) -> dict:
@@ -184,7 +189,7 @@ def inspect_video(path: Path, out: Path, frame_count: int, metadata: dict) -> di
         requested = min(max(0.0, duration * (idx + 0.5) / frame_count), max(0, duration - 0.025))
         filename = f"frame_{idx + 1:02d}_requested_{requested:.3f}s.png"
         dest = out / filename
-        proc = run(["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-ss", f"{requested:.6f}", "-i", str(path), "-map", "0:v:0", "-frames:v", "1", str(dest)], timeout=40)
+        proc = run(["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-protocol_whitelist", "file,pipe,data", "-ss", f"{requested:.6f}", "-i", str(path), "-map", "0:v:0", "-frames:v", "1", str(dest)], timeout=40)
         row = {"requested_seek_seconds": round(requested, 6), "actual_decoded_pts": None, "exact_pts_verified": False}
         if proc.returncode == 0 and dest.exists() and dest.stat().st_size:
             row["derived_frame"] = filename
@@ -203,7 +208,7 @@ def inspect_audio(path: Path, out: Path, metadata: dict) -> dict:
     streams = [s for s in metadata.get("streams", []) if s.get("codec_type") == "audio"]
     if not streams:
         return {"status": "no_audio_stream"}
-    command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-i", str(path), "-map", "0:a:0", "-t", "60", "-ac", "1", "-ar", "8000", "-f", "s16le", "pipe:1"]
+    command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-protocol_whitelist", "file,pipe,data", "-i", str(path), "-map", "0:a:0", "-t", "60", "-ac", "1", "-ar", "8000", "-f", "s16le", "pipe:1"]
     proc = run(command, timeout=45)
     if proc.returncode != 0 or not proc.stdout:
         return {"status": "failed", "error": proc.stderr.decode("utf-8", "replace")[:400]}
@@ -271,6 +276,8 @@ def prepare(args: argparse.Namespace) -> dict:
     }
     if media_type == "image":
         report["image"] = inspect_image(path, out, args.crop)
+        if report["image"]["source_animated"]:
+            report["limitations"].append("Animated image: this script inspected the first frame only; temporal review required")
     else:
         report["ffprobe"] = probe(path)
         if media_type == "video":

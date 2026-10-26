@@ -62,7 +62,7 @@ Individual finding shape:
 }
 ```
 
-For video or audio use `location: {"start_ms": 400, "end_ms": 900}` and optional `bbox_xywh` for a localized video frame. For metadata/provenance findings use `modality: "provenance"`, `location: {"record": "C2PA manifest"}`. Do not use false high precision for approximate seek timestamps.
+For video incidents, `scripts/inspect_incident.py` reports both absolute decoded PTS and time relative to video stream start, when parseable; disclose which timeline you used. For video or audio use `location: {"start_ms": 400, "end_ms": 900}` and optional `bbox_xywh` for a localized video frame. For metadata/provenance findings use `modality: "provenance"`, `location: {"record": "C2PA manifest"}`. Do not use false high precision for approximate seek timestamps.
 
 ### Enforcement notes
 

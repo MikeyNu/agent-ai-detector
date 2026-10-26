@@ -9,6 +9,7 @@ An evidence-first **agent skill** for forensic-looking inspection of images, por
 - `SKILL.md`: agent-facing entry point. This repository itself is the skill directory.
 - `references/`: research, modality playbooks, provenance, forensic decision rules, remediation, evaluation and report template.
 - `scripts/inspect_media.py`: optional offline evidence-preparation CLI. SHA-256, image metadata, 100% crops, still/video contact sheets, basic codec inventory, audio waveform preview and read-only C2PA manifest inspection when `c2patool` is installed.
+- `scripts/inspect_incident.py`: extract consecutive decoded frames around an incident with decoder-reported timestamps and optional region crops.
 - `scripts/validate_report.py`: report structure and epistemic guardrail checks. It does **not** validate the truth of the analyst's observation.
 - `examples/sample-report.json`: reproducible schema example with an intentionally inconclusive verdict.
 - `tests/`: executable unit and integration tests, including ordinary optical/codec transformations and negative cases.
@@ -23,6 +24,7 @@ The skill text works without installing packages. For utilities:
 python -m pip install -r requirements.txt
 python scripts/inspect_media.py /path/to/file.jpg --out /path/to/unique-evidence-dir --crop 25,40,120,90
 python scripts/inspect_media.py /path/to/clip.mp4 --out /path/to/unique-clip-report --frames 12
+python scripts/inspect_incident.py /path/to/clip.mp4 --out /path/to/unique-incident-report --from-s 12 --to-s 13 --crop 40,20,140,100
 python scripts/validate_report.py examples/sample-report.json
 python -m unittest discover -s tests -v
 ```
@@ -49,3 +51,7 @@ The repository tests check that **inspection utilities behave correctly and repo
 ## License
 
 MIT. Research sources retain their own licenses; the source list links to upstream publications instead of copying their content or benchmark datasets.
+
+### Animated images and forensic frame timing
+
+Animated GIF/WebP files are treated as still images by the general preparation script, which **explicitly warns that only the first frame was inspected**. Export them to an authorized video copy and run incident inspection if temporal authenticity matters. `inspect_incident.py` uses a half-open interval `[--from-s, --to-s)` in seconds **relative to the video stream start** and reports source decoder PTS separately, including any nonzero stream timestamp origin. `--max-frames` is a safety cap, not a complete long-video scan. For privacy and safety, FFmpeg inspection uses a local protocol allowlist and refuses network-input protocols.

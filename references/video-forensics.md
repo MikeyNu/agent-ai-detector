@@ -6,7 +6,7 @@
 
 1. Inventory source duration, true stream frame rate/time base, codec, bitrate, pixel format, resolution, variable-frame-rate possibility, audio tracks and container timestamp/time offsets. Check source/origin. Do not assume `frame_number / nominal_fps` is exact presentation time for VFR footage.
 2. Watch **the complete video at native timing with audio** for camera motion, lighting, edit rhythm and scene cuts. Mark transitions and any likely re-encoding discontinuities.
-3. Build overview contact sheet (e.g. 8 to 16 time-distributed frames). Contact sheets are navigation aids, not temporal analysis.
+3. Build overview contact sheet (e.g. 8 to 16 time-distributed frames). Contact sheets are navigation aids, not temporal analysis. Use `scripts/inspect_incident.py VIDEO --out OUTPUT --from-s 5 --to-s 6 --crop x,y,w,h` for consecutive decoded frames and showinfo timestamps in a suspicious interval.
 4. For each incident window, inspect **consecutive native frames**, not just two widely separated thumbnails. Start with roughly 0.5 to 2 seconds around event, refine to consecutive frames / original PTS if tooling supports it. Show several frames before and after. Keep shot cut boundaries visible.
 5. Replay at normal speed, then slowdown or frame-step without interpolation. Avoid artificially generated slow-motion frames for evidence. Identify whether a real object undergoes physically impossible metamorphosis or merely disocclusion, motion blur or codec corruption.
 6. Where audio exists, test timing with independently aligned audio. A single fixed lag from post-production is a different issue from phoneme-dependent impossible articulations. Cross-check any drift against source mux offsets.

@@ -57,6 +57,7 @@ Origin conclusion must be justified by its strongest underlying evidence, not by
 
 - For technical optical cue matrices and false positives: `references/image-forensics.md`.
 - For frame comparison, camera physics and AV timing: `references/video-forensics.md`.
+- For a multi-angle character sheet and cross-shot character consistency: `references/character-consistency.md`.
 - For speech and other audio: `references/audio-forensics.md`.
 - For provenance, C2PA, invisible watermarks and detector interpretation: `references/provenance-and-methods.md`.
 - For specific repair instructions and naturalistic production QA: `references/remediation-playbook.md`.
@@ -70,9 +71,10 @@ Origin conclusion must be justified by its strongest underlying evidence, not by
 python -m pip install -r requirements.txt
 python scripts/inspect_media.py portrait.png --out inspection-portrait --crop 120,90,80,60
 python scripts/inspect_media.py video.mp4 --out inspection-video --frames 12
+python scripts/inspect_incident.py video.mp4 --out incident-12s --from-s 12 --to-s 13 --crop 40,20,140,100
 python scripts/inspect_media.py speech.wav --out inspection-audio
 python scripts/validate_report.py examples/sample-report.json
 python -m unittest discover -s tests -v
 ```
 
-`inspect_media.py` prepares read-only metadata, hashes, native-resolution crops, contact sheets and waveform previews. **It does not classify origin, run neural detectors, infer trust or authenticate people.** Optional external binaries: `ffmpeg`, `ffprobe`, `c2patool`. Only use on material you are authorized to inspect. Retain original originals securely; extracted frames and metadata may be sensitive. Consult `README.md` before sharing reports or samples.
+`inspect_media.py` prepares read-only metadata, hashes, native-resolution crops, contact sheets and waveform previews. `inspect_incident.py` produces consecutive decoded frames and decoder-reported PTS around a suspicious interval, with optional region crops. **It does not classify origin, run neural detectors, infer trust or authenticate people.** Optional external binaries: `ffmpeg`, `ffprobe`, `c2patool`. Only use on material you are authorized to inspect. Retain original originals securely; extracted frames and metadata may be sensitive. Consult `README.md` before sharing reports or samples.

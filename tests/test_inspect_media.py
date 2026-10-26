@@ -90,6 +90,16 @@ class ImagePreparationTests(unittest.TestCase):
         self.assertEqual(report["c2pa"]["status"], "not_checked")
         self.assertEqual(report["origin_classification"], "not_attempted")
 
+    def test_animated_gif_is_not_mistaken_for_complete_video_review(self):
+        source = self.root / "animated.gif"
+        Image.new("RGB", (20, 20), "red").save(source, save_all=True,
+            append_images=[Image.new("RGB", (20, 20), "blue")], duration=120, loop=0)
+        report = media.prepare(media.argparse.Namespace(input=source, out=self.root / "gif", frames=8, crop=[]))
+        self.assertTrue(report["image"]["source_animated"])
+        self.assertEqual(report["image"]["source_frame_count"], 2)
+        self.assertTrue(any("first frame only" in x for x in report["limitations"]))
+        self.assertEqual(report["origin_classification"], "not_attempted")
+
     def test_unknown_file_rejected(self):
         bad = self.root / "blob.bin"
         bad.write_bytes(b"not a supported image/video/audio")

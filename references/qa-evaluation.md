@@ -70,7 +70,7 @@ Cases 1-36 are **design acceptance scenarios**, not claims that all have been ru
 | A3 Immutability and traceability | SHA-256 matches input; original bytes unchanged; outputs labeled derived | `tests/test_inspect_media.py` |
 | A4 Negative and missing dependencies | Missing ffmpeg/c2patool never becomes a positive detection; no corrupted silent success | `tests/test_inspect_media.py` |
 | A5 Report semantics | Claimed confirmed AI cannot pass without verified-source provenance and scope; visual-only result never labeled verified | `tests/test_validate_report.py` |
-| A6 Time/region bounds | Crops valid, frame times explicit about seek uncertainty | `tests/test_inspect_media.py` |
+| A6 Time/region bounds | Crops valid, requested seek times distinct from actual decoder PTS; adjacent frames may have nonzero stream origins | `tests/test_inspect_media.py` and `tests/test_inspect_incident.py` |
 | B1 Real-world discrimination | Run blinded, licensed ground-truth cases 1-36 and compute by-domain metrics | **Not established by unit tests** |
 | B2 Cross-domain robustness | Show stable performance across unseen generators, codecs and capture devices | **Not established by unit tests** |
 | B3 Calibration and reviewer agreement | Confidence metrics and real-world false-positive rates | **Not established by unit tests** |
